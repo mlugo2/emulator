@@ -1,5 +1,5 @@
 #include <stdio.h>
-#include <SDL2/SDL.h>
+#include "screen.h"
 
 /*
 	Author: Marco Lugo
@@ -21,11 +21,6 @@
 // Data types for the cpu
 typedef char BYTE;			// 8-bits
 typedef short int WORD;		// 16-bits
-
-// Screen dimensions constants
-const int SCREEN_WIDTH = 640;
-const int SCREEN_HEIGHT = 480;
-
 
 /*
 	For testing purposes. 
@@ -53,7 +48,6 @@ const int SCREEN_HEIGHT = 480;
 // Function prototypes
 void cpu(BYTE [], WORD);
 void load_ram(BYTE []);
-void display();
 
 int main(int argc, char const *argv[])
 {
@@ -69,8 +63,47 @@ int main(int argc, char const *argv[])
 	};
 	WORD start = 0x0003;
 
-	cpu(ram, start);
+	// Start up SDL and create window
+	if ( !init_screen() ) {
+		printf("Failed to Initialize!\n");
+	}
+	else {
 
+		// Main loop flag
+		bool quit = false;
+
+		// Event handler
+		SDL_Event e;
+
+		// While application is running
+		while( !quit ) {
+
+			// cpu(ram, start);
+
+			// Handle events on queue
+			while( SDL_PollEvent(&e) != 0) {
+				// User requests quit
+				if ( e.type == SDL_QUIT ){
+					quit = true;
+				}
+			}
+
+			// Clear screen
+			SDL_SetRenderDrawColor( gRenderer, 0x00, 0x00, 0x00, 0x00);
+			SDL_RenderClear( gRenderer );
+
+			// Render red pixel
+			SDL_Rect fillpixel = { SCREEN_WIDTH / 4, SCREEN_HEIGHT / 4, 1, 1};
+			SDL_SetRenderDrawColor( gRenderer, 0xFF, 0x00, 0x00, 0xFF );		
+			SDL_RenderFillRect( gRenderer, &fillpixel );
+
+			// Update screen
+			SDL_RenderPresent( gRenderer );
+		}
+	}
+
+	// Free resources and close SDL
+	close_sdl();
 	return 0;
 }
 
