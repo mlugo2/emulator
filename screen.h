@@ -1,7 +1,5 @@
 #include <SDL2/SDL.h>
-
-// define bool
-typedef enum { false, true } bool;
+#include "common.h"
 
 // Screen dimensions constants
 const int SCREEN_WIDTH = 640;

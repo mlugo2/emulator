@@ -1,4 +1,4 @@
-OBJS = main.c screen.h
+OBJS = main.c common.h screen.h cpu.h
 
 #OBJ_NAME specifies the name of our exectuable
 OBJ_NAME = main
