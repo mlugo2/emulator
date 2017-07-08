@@ -65,16 +65,55 @@ void load_ram(BYTE ram[]) {
 
 int screenThread(void* memory) {
 
+	BYTE A[14][8] = {
+		{0, 0 ,0 ,0 ,0 ,0 ,0 ,0},
+		{0, 0 ,0 ,0 ,0 ,0 ,0 ,0},
+		{0, 0 ,255 ,255 ,255 ,255 ,0 ,0},
+		{0, 255 ,255 ,0 ,0 ,255 ,255 ,0},
+		{0, 255 ,255 ,0 ,0 ,255 ,255 ,0},
+		{0, 255 ,255 ,255 ,255 ,255 ,255 ,0},
+		{0, 255 ,255 ,0 ,0 ,255 ,255 ,0},
+		{0, 255 ,255 ,0 ,0 ,255 ,255 ,0},
+		{0, 255 ,255 ,0 ,0 ,255 ,255 ,0},
+		{0, 255 ,255 ,0 ,0 ,255 ,255 ,0},
+		{0, 0 ,0 ,0 ,0 ,0 ,0 ,0},
+		{0, 0 ,0 ,0 ,0 ,0 ,0 ,0},
+		{0, 0 ,0 ,0 ,0 ,0 ,0 ,0},
+		{0, 0 ,0 ,0 ,0 ,0 ,0 ,0},
+		{0, 0 ,0 ,0 ,0 ,0 ,0 ,0},
+	};
+
+	BYTE** codePage[0xFF];
+
+	codePage[0x61] = A;
+
 	// Event handler
 	SDL_Event e;
 
 	// Accessing each byte in vram
 	int x;
 	int y;
-	int i=0;
 
-	// VRAM initialization
-	BYTE vram[460][680] = {0x65};
+	// VRAM
+	int vram[480][640];
+
+	// Initialize vram
+	for (y = 0; y < SCREEN_HEIGHT; y++) {
+		for (x = 0; x < SCREEN_WIDTH; x ++) {
+			vram[y][x] = 0;
+		}
+	}
+
+	BYTE s[14][8];
+
+	memcpy(s, codePage[0x61], sizeof(s));
+
+	for (y = 0; y < 14; y++) {
+		for (x = 0; x < 8; x ++) {
+			vram[y][x] = s[y][x];
+		}
+	}
+
 
 	// Start up SDL and create window
 	if ( !init_screen() ) {
@@ -95,17 +134,18 @@ int screenThread(void* memory) {
 			// Clear screen
 			SDL_SetRenderDrawColor( gRenderer, 0x00, 0x00, 0x00, 0x00);
 			SDL_RenderClear( gRenderer );
-			
+
 			for (y = 0; y < SCREEN_HEIGHT; y++) {
 				for (x = 0; x < SCREEN_WIDTH; x++) {
 
 					// Render red pixel
 					SDL_Rect fillpixel = { x, y, 1, 1};
-					SDL_SetRenderDrawColor( gRenderer, i, i, i, i);		
+					int z = vram[y][x];
+
+					SDL_SetRenderDrawColor( gRenderer, z, z, z, z);		
 					SDL_RenderFillRect( gRenderer, &fillpixel );
 				}
 			}
-			i++;
 
 			// Update screen
 			SDL_RenderPresent( gRenderer );
