@@ -46,7 +46,6 @@ void cpu(BYTE ram[], WORD start) {
 		int i = 0;
 		// Stop the cpu while the interupt is handled
 		while (ram[0xFFFE] != 0x00) {
-			printf("In the CPU! %d\n", quit);
 			if (quit)
 				goto stop;
 		}

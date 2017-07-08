@@ -63,10 +63,18 @@ void load_ram(BYTE ram[]) {
 	// Open a file and load all the bytes into ram
 }
 
-int screenThread(void* d) {
+int screenThread(void* memory) {
 
 	// Event handler
 	SDL_Event e;
+
+	// Accessing each byte in vram
+	int x;
+	int y;
+	int i=0;
+
+	// VRAM initialization
+	BYTE vram[460][680] = {0x65};
 
 	// Start up SDL and create window
 	if ( !init_screen() ) {
@@ -87,11 +95,17 @@ int screenThread(void* d) {
 			// Clear screen
 			SDL_SetRenderDrawColor( gRenderer, 0x00, 0x00, 0x00, 0x00);
 			SDL_RenderClear( gRenderer );
+			
+			for (y = 0; y < SCREEN_HEIGHT; y++) {
+				for (x = 0; x < SCREEN_WIDTH; x++) {
 
-			// Render red pixel
-			SDL_Rect fillpixel = { SCREEN_WIDTH / 4, SCREEN_HEIGHT / 4, 1, 1};
-			SDL_SetRenderDrawColor( gRenderer, 0xFF, 0x00, 0x00, 0xFF );		
-			SDL_RenderFillRect( gRenderer, &fillpixel );
+					// Render red pixel
+					SDL_Rect fillpixel = { x, y, 1, 1};
+					SDL_SetRenderDrawColor( gRenderer, i, i, i, i);		
+					SDL_RenderFillRect( gRenderer, &fillpixel );
+				}
+			}
+			i++;
 
 			// Update screen
 			SDL_RenderPresent( gRenderer );
