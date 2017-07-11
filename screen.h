@@ -1,11 +1,5 @@
 #include <SDL2/SDL.h>
-
-// define bool
-typedef enum { false, true } bool;
-
-// Screen dimensions constants
-const int SCREEN_WIDTH = 640;
-const int SCREEN_HEIGHT = 480;
+#include "common.h"
 
 // Starts up SDL and creates window
 bool init_screen();
@@ -18,6 +12,10 @@ SDL_Window* gWindow = NULL;
 
 // The surface contained by the window
 SDL_Surface* gScreenSurface = NULL;
+
+// The window renderer
+SDL_Renderer* gRenderer = NULL;
+
 
 
 // The image we will load and show on the screen
@@ -35,6 +33,12 @@ bool init_screen() {
 	}
 	else {
 
+		//Set texture filtering to linear
+		if( !SDL_SetHint( SDL_HINT_RENDER_SCALE_QUALITY, "1" ) )
+		{
+			printf( "Warning: Linear texture filtering not enabled!" );
+		}
+
 		// Create window
 		gWindow = SDL_CreateWindow("Sunflower", SDL_WINDOWPOS_UNDEFINED,
 			SDL_WINDOWPOS_UNDEFINED, SCREEN_WIDTH, SCREEN_HEIGHT, SDL_WINDOW_SHOWN );
@@ -45,12 +49,16 @@ bool init_screen() {
 		}
 		else {
 
-			// Get window surface
-			gScreenSurface = SDL_GetWindowSurface( gWindow );
-
-			// Fill the sureface white
-			SDL_FillRect( gScreenSurface, NULL, SDL_MapRGB( gScreenSurface->format, 0xFF, 0xFF, 0xFF) );
-
+			// Create renderer for window
+			gRenderer = SDL_CreateRenderer( gWindow, -1, SDL_RENDERER_ACCELERATED);
+			if ( gRenderer == NULL ) {
+				printf( "Renderer could not be created! SDL Error: %s\n", SDL_GetError() );
+				success = false;
+			}
+			else {
+				// Initialize renderer color
+				SDL_SetRenderDrawColor( gRenderer, 0x00, 0x00, 0x00, 0x00);
+			}
 		}
 	}
 

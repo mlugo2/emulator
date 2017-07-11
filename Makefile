@@ -1,4 +1,4 @@
-OBJS = main.c
+OBJS = main.c 
 
 #OBJ_NAME specifies the name of our exectuable
 OBJ_NAME = main

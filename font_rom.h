@@ -479,6 +479,7 @@ const BYTE Z[CHAR_HEIGHT][CHAR_WIDTH] = {
 	appropriate ASCII value, it will return the
 	correct char sprite. 
 */
-const BYTE** codePage[0xFF];
+const BYTE** codePage[0xFF] = {
+	A, B, C
+};
 
-codePage[0x61] = A;

@@ -1,4 +1,5 @@
 #include <SDL2/SDL_thread.h>
+#include "common.h"
 #include "font_rom.h"
 
 // thread function prototypes
@@ -15,7 +16,7 @@ int videoCard_thread(void* memory[] ) {
 	int y;
 
 	// VRAM
-	int vram[480][640];
+	BYTE vram[480][640];
 
 	// Initialize vram
 	for (y = 0; y < SCREEN_HEIGHT; y++) {
@@ -26,7 +27,7 @@ int videoCard_thread(void* memory[] ) {
 
 	BYTE s[14][8];
 
-	memcpy(s, codePage[0x61], sizeof(s));
+	memcpy(s, codePage[0x00], sizeof(s));
 
 	for (y = 0; y < 14; y++) {
 		for (x = 0; x < 8; x ++) {
@@ -68,7 +69,7 @@ int videoCard_thread(void* memory[] ) {
 					SDL_Rect pixel = { x, y, 1, 1};
 					int z = vram[y][x];
 
-					SDL_SetRenderDrawColor( gRenderer, z, z, z, z);		
+					SDL_SetRenderDrawColor( gRenderer, z, z, z, 255);		
 					SDL_RenderFillRect( gRenderer, &pixel );
 				}
 			}

@@ -1,4 +1,9 @@
 #include "common.h"
+
+// Data types for the cpu
+typedef unsigned char BYTE;			// 8-bits
+typedef short unsigned int WORD;	// 16-bits
+
 /*
 	For testing purposes. 
 	Erase once done.
@@ -148,7 +153,11 @@ void cpu(BYTE ram[], WORD start) {
 				addr = 0x0000 | (WORD)a;
 				addr <<= 8;
 				addr |= (WORD)b;
-				ram[addr] = v;		
+				ram[addr] = v;	
+
+				ram[addr] = v;
+
+				
 				break;
 
 			case 0x0e:	// print tos
