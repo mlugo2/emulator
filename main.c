@@ -31,7 +31,13 @@ int main(int argc, char const *argv[])
 	
 	// main memory
 	BYTE ram[0xffff] = {
-		iconst, 0xFF,
+		iconst, 0x01,
+		gstore, 0xFF, 0xFE,
+		iconst, 0x00,
+		gstore, 0xFF, 0xFD,
+		iconst, 0x00,
+		gstore, 0xFF, 0xFC,
+		iconst, 0x02,
 		gstore, 0xFF, 0xFE,
 		halt
 	};
@@ -42,7 +48,8 @@ int main(int argc, char const *argv[])
 	SDL_Thread* threadID = SDL_CreateThread( keyboard_thread, "Simple", data);
 	SDL_Thread* screenID = SDL_CreateThread( videoCard_thread, "Screen", data);
 
-	//cpu(ram, start);
+	cpu(ram, start);
+	printf("DONE!\n");
 
 	// Remove timer in case the call back was not called
 	SDL_WaitThread( screenID, NULL);

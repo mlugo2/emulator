@@ -12,11 +12,17 @@ int videoCard_thread(void* memory[] ) {
 	SDL_Event e;
 
 	// Accessing each byte in vram
-	int x;
-	int y;
+	int x, y;
 
 	// VRAM
 	BYTE vram[480][640];
+
+	BYTE cursor_x_pos;
+	BYTE cursor_y_pos;
+	BYTE x_start;
+	BYTE x_stop;
+	BYTE y_start;
+	BYTE y_stop;
 
 	// Initialize vram
 	for (y = 0; y < SCREEN_HEIGHT; y++) {
@@ -25,21 +31,19 @@ int videoCard_thread(void* memory[] ) {
 		}
 	}
 
-	BYTE s[14][8];
+	BYTE byte_to_write[14][8];
 
-	memcpy(s, codePage[0x00], sizeof(s));
+	// for (y = 0; y < 14; y++) {
+	// 	for (x = 0; x < 8; x ++) {
+	// 		vram[y][x] = s[y%17][x%8];
+	// 	}
+	// }
 
-	for (y = 0; y < 14; y++) {
-		for (x = 0; x < 8; x ++) {
-			vram[y][x] = s[y%17][x%8];
-		}
-	}
-
-	for (y = 0; y < 14; y++) {
-		for (x = 8; x < 16; x ++) {
-			vram[y][x] = s[y%14][x%8];
-		}
-	}
+	// for (y = 0; y < 14; y++) {
+	// 	for (x = 8; x < 16; x ++) {
+	// 		vram[y][x] = s[y%14][x%8];
+	// 	}
+	// }
 
 
 	// Start up SDL and create window
@@ -56,6 +60,42 @@ int videoCard_thread(void* memory[] ) {
 				if ( e.type == SDL_QUIT ){
 					quit = true;
 				}
+			}
+
+			// Interrupt for text mode print has been sent.
+			if (*((BYTE*)memory + 0xFFFE) == 0x02) { 
+
+				printf("I AM IN VIDEO\n");
+				// Get char byte from code page
+				memcpy(byte_to_write, codePage[0x00], sizeof(byte_to_write));
+
+				// // Get X and Y pos for the cursor
+				cursor_x_pos = *((BYTE*)memory + 0xFFFD) + 1;
+				cursor_y_pos = *((BYTE*)memory + 0xFFFC) + 1;
+
+				// Calculate where this char starts on stops on VRAM
+				x_stop = cursor_x_pos * 8;
+				x_start = ( (x_stop - 8) < 0 ) ? 0 : (x_stop - 8);
+				y_stop = cursor_y_pos * 14;
+				y_start = ( (y_stop - 14) < 0 ) ? 0 : (y_stop - 14);
+
+				// DEBUG
+				printf("cursor_x_pos: %x\n", cursor_x_pos);
+				printf("cursor_y_pos: %x\n", cursor_y_pos);
+				printf("x_stop: %x\n", x_stop);
+				printf("x_start: %x\n", x_start);
+				printf("y_stop: %x\n", y_stop);
+				printf("y_start: %x\n", y_start);
+
+				// // Draw
+				for (y = y_start; y < y_stop; y++) {
+					for (x = x_start; x < x_stop; x++) {
+						vram[y][x] = byte_to_write[y%14][x%8];
+					}
+				}
+
+				// Interrupt done
+				*((BYTE*)memory + 0xFFFE) = 0x00;
 			}
 
 			// Clear screen
@@ -90,7 +130,7 @@ int keyboard_thread( void* memory[] ) {
 	while (!quit) {
 
 		// Do nothing until the correct signal is passed.
-		while (*((BYTE*)memory + 0xFFFE) != 0xFF) { if (quit) goto stop; }
+		while (*((BYTE*)memory + 0xFFFE) != 0x01) { if (quit) goto stop; }
 
 		// Read keyboard input
 		const Uint8* currentKeyStates = SDL_GetKeyboardState( NULL );
