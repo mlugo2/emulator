@@ -138,7 +138,6 @@ void cpu(BYTE ram[], WORD start) {
 				addr |= (WORD)b;
 				v = ram[addr];
 				stack[++sp] = v;
-				
 				break;
 
 			case 0x0c:	// store
@@ -154,10 +153,6 @@ void cpu(BYTE ram[], WORD start) {
 				addr <<= 8;
 				addr |= (WORD)b;
 				ram[addr] = v;	
-
-				ram[addr] = v;
-
-				
 				break;
 
 			case 0x0e:	// print tos

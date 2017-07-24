@@ -5,6 +5,7 @@
 // thread function prototypes
 int keyboard_thread( void* memory[] );
 int videoCard_thread( void* memory[] );
+int clock_thread( void* memory[] );
 
 int videoCard_thread(void* memory[] ) {
 
@@ -33,19 +34,6 @@ int videoCard_thread(void* memory[] ) {
 
 	BYTE byte_to_write[14][8];
 
-	// for (y = 0; y < 14; y++) {
-	// 	for (x = 0; x < 8; x ++) {
-	// 		vram[y][x] = s[y%17][x%8];
-	// 	}
-	// }
-
-	// for (y = 0; y < 14; y++) {
-	// 	for (x = 8; x < 16; x ++) {
-	// 		vram[y][x] = s[y%14][x%8];
-	// 	}
-	// }
-
-
 	// Start up SDL and create window
 	if ( !init_screen() ) {
 		printf("Failed to Initialize!\n");
@@ -65,7 +53,6 @@ int videoCard_thread(void* memory[] ) {
 			// Interrupt for text mode print has been sent.
 			if (*((BYTE*)memory + 0xFFFE) == 0x02) { 
 
-				printf("I AM IN VIDEO\n");
 				// Get char byte from code page
 				memcpy(byte_to_write, codePage[0x00], sizeof(byte_to_write));
 
@@ -73,19 +60,11 @@ int videoCard_thread(void* memory[] ) {
 				cursor_x_pos = *((BYTE*)memory + 0xFFFD) + 1;
 				cursor_y_pos = *((BYTE*)memory + 0xFFFC) + 1;
 
-				// Calculate where this char starts on stops on VRAM
+				// Calculate where this char starts and stops in VRAM
 				x_stop = cursor_x_pos * 8;
 				x_start = ( (x_stop - 8) < 0 ) ? 0 : (x_stop - 8);
 				y_stop = cursor_y_pos * 14;
 				y_start = ( (y_stop - 14) < 0 ) ? 0 : (y_stop - 14);
-
-				// DEBUG
-				printf("cursor_x_pos: %x\n", cursor_x_pos);
-				printf("cursor_y_pos: %x\n", cursor_y_pos);
-				printf("x_stop: %x\n", x_stop);
-				printf("x_start: %x\n", x_start);
-				printf("y_stop: %x\n", y_stop);
-				printf("y_start: %x\n", y_start);
 
 				// // Draw
 				for (y = y_start; y < y_stop; y++) {
@@ -322,4 +301,72 @@ int keyboard_thread( void* memory[] ) {
 	
 	// It stops here..
 	stop: return 0;
+}
+
+
+int clock_thread( void* memory[] ) {
+
+	// Initialize var
+	BYTE startTime = 0;
+
+	// Initialize flags
+	BYTE mode;
+	BYTE start;
+	BYTE stop;
+	BYTE stat;
+	BYTE enInt;
+
+	BYTE COUNT = *((BYTE*)memory + 0xFFFA);
+
+	// Function
+	bool tick(BYTE t);
+	
+	while( !quit ) {
+
+		// First hurdle, is stop activated?
+		// if it is, wait here
+		while (stop) { stop  = (*((BYTE*)memory + 0xFFF9) >> 1) & 0x01; }
+		
+		// enInt = (*((BYTE*)memory + 0xFFF9) >> 4) & 0x01;
+
+		// Stay here until start bit is set
+		while (!start) { start = *((BYTE*)memory + 0xFFF9) & 0x01; }
+
+		// Now get the mode
+		mode  = *((BYTE*)memory + 0xFFF9) >> 7;
+
+		// Initialize: COUNT = CNTM;
+		*((BYTE*)memory + 0xFFFA) = *((BYTE*)memory + 0xFFFB);
+
+		// Counter or Timer
+		if (mode == 0) { 	// Counter mode
+
+			// Set start to 0
+			*((BYTE*)memory + 0xFFF9) & 0xFE;
+
+			// Count down from COUNT
+			while ( *((BYTE*)memory + 0xFFFA) > 0 ) {
+
+				// Decrease COUNT
+				*((BYTE*)memory + 0xFFFA) = ( tick( (BYTE) SDL_GetTicks() )) 
+				? *((BYTE*)memory + 0xFFFA) - 0x01 : *((BYTE*)memory + 0xFFFA);
+			}
+
+			// Finished, set CTCON[6]
+			*((BYTE*)memory + 0xFFFA) |= 0x40;
+		}
+		else {				// Timer mode
+			// TODO
+		}
+		
+		
+	} // end of while
+	
+}
+
+bool tick( BYTE t) {
+	if (t % 2 == 0)
+		return true;
+	else
+		return false;
 }

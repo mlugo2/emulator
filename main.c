@@ -31,14 +31,10 @@ int main(int argc, char const *argv[])
 	
 	// main memory
 	BYTE ram[0xffff] = {
+		iconst, 0xff,
+		gstore, 0xff, 0xfb,
 		iconst, 0x01,
-		gstore, 0xFF, 0xFE,
-		iconst, 0x00,
-		gstore, 0xFF, 0xFD,
-		iconst, 0x00,
-		gstore, 0xFF, 0xFC,
-		iconst, 0x02,
-		gstore, 0xFF, 0xFE,
+		gstore, 0xff, 0xf9,
 		halt
 	};
 	WORD start = 0x0000;
@@ -47,13 +43,16 @@ int main(int argc, char const *argv[])
 	void* data = ram;
 	SDL_Thread* threadID = SDL_CreateThread( keyboard_thread, "Simple", data);
 	SDL_Thread* screenID = SDL_CreateThread( videoCard_thread, "Screen", data);
+	SDL_Thread* clockID = SDL_CreateThread( clock_thread, "Clock", data);
 
+	// Da CPU
 	cpu(ram, start);
 	printf("DONE!\n");
 
 	// Remove timer in case the call back was not called
 	SDL_WaitThread( screenID, NULL);
 	SDL_WaitThread( threadID, NULL);
+	SDL_WaitThread( clockID, NULL);
 
 	
 	return 0;
