@@ -321,16 +321,20 @@ int clock_thread( void* memory[] ) {
 	// Function
 	bool tick(BYTE t);
 	
-	while( !quit ) {
+end:	while( !quit ) {
 
 		// First hurdle, is stop activated?
 		// if it is, wait here
-		while (stop) { stop  = (*((BYTE*)memory + 0xFFF9) >> 1) & 0x01; }
+		while (stop) { stop  = (*((BYTE*)memory + 0xFFF9) >> 1) & 0x01; 
+			if(quit) goto end;
+		}
 		
 		// enInt = (*((BYTE*)memory + 0xFFF9) >> 4) & 0x01;
 
 		// Stay here until start bit is set
-		while (!start) { start = *((BYTE*)memory + 0xFFF9) & 0x01; }
+		while (!start) { start = *((BYTE*)memory + 0xFFF9) & 0x01; 
+			if(quit) goto end;
+		}
 
 		// Now get the mode
 		mode  = *((BYTE*)memory + 0xFFF9) >> 7;
@@ -342,7 +346,8 @@ int clock_thread( void* memory[] ) {
 		if (mode == 0) { 	// Counter mode
 
 			// Set start to 0
-			*((BYTE*)memory + 0xFFF9) & 0xFE;
+			*((BYTE*)memory + 0xFFF9) &= 0xFE;
+			start = 0;
 
 			// Count down from COUNT
 			while ( *((BYTE*)memory + 0xFFFA) > 0 ) {
@@ -350,6 +355,10 @@ int clock_thread( void* memory[] ) {
 				// Decrease COUNT
 				*((BYTE*)memory + 0xFFFA) = ( tick( (BYTE) SDL_GetTicks() )) 
 				? *((BYTE*)memory + 0xFFFA) - 0x01 : *((BYTE*)memory + 0xFFFA);
+				if(quit) goto end;
+
+				// Actual delay
+				SDL_Delay(1);
 			}
 
 			// Finished, set CTCON[6]
@@ -359,7 +368,7 @@ int clock_thread( void* memory[] ) {
 			// TODO
 		}
 		
-		
+		printf("Timer done\n");
 	} // end of while
 	
 }
