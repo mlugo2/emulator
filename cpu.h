@@ -1,9 +1,5 @@
 #include "common.h"
 
-// Data types for the cpu
-typedef unsigned char BYTE;			// 8-bits
-typedef short unsigned int WORD;	// 16-bits
-
 /*
 	For testing purposes. 
 	Erase once done.
@@ -45,7 +41,7 @@ void cpu(BYTE ram[], WORD start) {
 
 		int i = 0;
 		// Stop the cpu while the interupt is handled
-		while (ram[0xFFFE] != 0x00) {
+		while (ram[MEM_INT] != 0x00) {
 			if (quit)
 				goto stop;
 		}
