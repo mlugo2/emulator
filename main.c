@@ -13,7 +13,7 @@
 	
 		This is the Sunflower computer system.  This is a simulation of a
 	complete computing system, including: cpu, memory, I/O, and display--
-	and anything else I can think of ducking tapping on to this thing :p
+	and anything else I can think of duck tapping on to this thing 
 
 	Description:
 	------------

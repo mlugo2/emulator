@@ -7,6 +7,12 @@ int keyboard_thread( void* memory[] );
 int videoCard_thread( void* memory[] );
 int clock_thread( void* memory[] );
 
+typedef struct color_values {
+		int red;
+		int green;
+		int blue;
+	} color;
+
 int videoCard_thread(void* memory[] ) {
 
 	// Event handler
@@ -24,6 +30,11 @@ int videoCard_thread(void* memory[] ) {
 	BYTE x_stop;
 	BYTE y_start;
 	BYTE y_stop;
+
+	
+
+	// fuction prototype
+	color get_color(BYTE b);
 
 	// Initialize vram
 	for (y = 0; y < SCREEN_HEIGHT; y++) {
@@ -54,6 +65,7 @@ int videoCard_thread(void* memory[] ) {
 			if (*((BYTE*)memory + MEM_INT) == 0x02) { 
 
 				// Get char byte from code page
+				// TODO: actually pass the hex to codePage[]
 				memcpy(byte_to_write, codePage[0x00], sizeof(byte_to_write));
 
 				// // Get X and Y pos for the cursor
@@ -72,6 +84,21 @@ int videoCard_thread(void* memory[] ) {
 						vram[y][x] = byte_to_write[y%14][x%8];
 					}
 				}
+
+				// Interrupt done
+				*((BYTE*)memory + MEM_INT) = 0x00;
+			}
+
+			// Interrupt for graphics mode
+			if (*((BYTE*)memory + MEM_INT) == 0x03) { 
+
+				// Get x position
+
+				// Get y position
+
+				// Get color of pixel
+
+				// Draw pixel at given location
 
 				// Interrupt done
 				*((BYTE*)memory + MEM_INT) = 0x00;
@@ -102,6 +129,69 @@ int videoCard_thread(void* memory[] ) {
 	close_sdl();
 		
 	}
+}
+
+color get_color(BYTE b) {
+
+	color c0 = {0, 0, 0};
+	color c1 = {0, 0, 1};
+	color c2 = {120, 120, 120};
+	color c3 = {248, 216, 248};
+	color c4 = {0, 64, 88};
+	color c5 = {0, 136, 136};
+	color c6 = {0, 232, 216};
+	color c7 = {0, 252, 252};
+	color c8 = {0, 88, 0};
+	color c9 = {0, 168, 68};
+	color c10 = {88, 248, 152};
+	color c11 = {184, 248, 216};
+	color c12 = {0, 104, 0};
+	color c13 = {0, 168, 0};
+	color c14 = {88, 216, 84};
+	color c15 = {184, 248, 184};
+	color c16 = {0, 120, 0};
+	color c17 = {0, 184, 0};
+	color c18 = {184, 248, 24};
+	color c19 = {216, 248, 120};
+	color c20 = {80, 48, 0};
+	color c21 = {172, 124, 0};
+	color c22 = {248, 184, 0};
+	color c23 = {248, 216, 120};
+	color c24 = {136, 20, 0};
+	color c25 = {228, 92, 16};
+	color c26 = {252, 160, 68};
+	color c27 = {252, 224, 168};
+	color c28 = {168, 16, 0};
+	color c29 = {248, 56, 0};
+	color c30 = {248, 120, 88};
+	color c31 = {240, 208, 176};
+	color c32 = {168, 0, 32};
+	color c33 = {228, 0, 88};
+	color c34 = {248, 88, 152};
+	color c35 = {248, 164, 192};
+	color c36 = {148, 0, 132};
+	color c37 = {216, 0, 204};
+	color c38 = {248, 120, 248};
+	color c39 = {248, 184, 248};
+	color c40 = {68, 40, 188};
+	color c41 = {104, 68, 252};
+	color c42 = {152, 120, 248};
+	color c43 = {216, 184, 248};
+	color c44 = {0, 0, 188};
+	color c45 = {0, 88, 248};
+	color c46 = {104, 136, 252};
+	color c47 = {184, 184, 248};
+	color c48 = {0, 0, 252};
+	color c49 = {0, 120, 248};
+	color c50 = {60, 188, 252};
+	color c51 = {164, 228, 252};
+	color c52 = {124, 124, 124};
+	color c53 = {188, 188, 188};
+	color c54 = {248, 248, 248};
+	color c55 = {252, 252, 252};
+
+	color palette[] = {
+	};
 }
 
 int keyboard_thread( void* memory[] ) {
