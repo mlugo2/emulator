@@ -31,10 +31,10 @@ int main(int argc, char const *argv[])
 	
 	// main memory
 	BYTE ram[0xffff] = {
-		iconst, 0xff,
-		gstore, 0xff, 0xfb,
 		iconst, 0x01,
-		gstore, 0xff, 0xf9,
+		gstore, 0xff, 0xfe,
+		iconst, 0x02,
+		gstore, 0xff, 0xfe,
 		halt
 	};
 	WORD start = 0x0000;

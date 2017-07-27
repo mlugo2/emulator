@@ -31,8 +31,6 @@ int videoCard_thread(void* memory[] ) {
 	BYTE y_start;
 	BYTE y_stop;
 
-	
-
 	// fuction prototype
 	color get_color(BYTE b);
 
@@ -78,9 +76,12 @@ int videoCard_thread(void* memory[] ) {
 				y_stop = cursor_y_pos * 14;
 				y_start = ( (y_stop - 14) < 0 ) ? 0 : (y_stop - 14);
 
-				// Draw pixel given cursor location
+				// Fill vram given cursor location
 				for (y = y_start; y < y_stop; y++) {
 					for (x = x_start; x < x_stop; x++) {
+						BYTE back_color = 10;
+						BYTE front_color = 30;
+						byte_to_write[y%14][x%8] = ( byte_to_write[y%14][x%8] == 0) ? (back_color) : (front_color);
 						vram[y][x] = byte_to_write[y%14][x%8];
 					}
 				}
@@ -90,19 +91,19 @@ int videoCard_thread(void* memory[] ) {
 			}
 
 			// Interrupt for graphics mode
-			if (*((BYTE*)memory + MEM_INT) == 0x03) { 
+			// if (*((BYTE*)memory + MEM_INT) == 0x03) { 
 
-				// Get x position
+			// 	// Get x position
 
-				// Get y position
+			// 	// Get y position
 
-				// Get color of pixel
+			// 	// Get color of pixel
 
-				// Draw pixel at given location
+			// 	// Draw pixel at given location
 
-				// Interrupt done
-				*((BYTE*)memory + MEM_INT) = 0x00;
-			}
+			// 	// Interrupt done
+			// 	*((BYTE*)memory + MEM_INT) = 0x00;
+			// }
 
 			// Clear screen
 			SDL_SetRenderDrawColor( gRenderer, 0x00, 0x00, 0x00, 0x00);
@@ -112,11 +113,14 @@ int videoCard_thread(void* memory[] ) {
 			for (y = 0; y < SCREEN_HEIGHT; y++) {
 				for (x = 0; x < SCREEN_WIDTH; x++) {
 
-					// Render red pixel
+					// Render pixel
 					SDL_Rect pixel = { x, y, 1, 1};
-					int z = vram[y][x];
 
-					SDL_SetRenderDrawColor( gRenderer, z, z, z, 255);		
+					// Get color from palette
+					color z = get_color( vram[y][x] );
+
+					// Draw to the screen
+					SDL_SetRenderDrawColor( gRenderer, z.red, z.green, z.blue, 255);
 					SDL_RenderFillRect( gRenderer, &pixel );
 				}
 			}
@@ -133,6 +137,8 @@ int videoCard_thread(void* memory[] ) {
 
 color get_color(BYTE b) {
 
+
+	// Available colors
 	color c0 = {0, 0, 0};
 	color c1 = {0, 0, 1};
 	color c2 = {120, 120, 120};
@@ -191,7 +197,20 @@ color get_color(BYTE b) {
 	color c55 = {252, 252, 252};
 
 	color palette[] = {
+		c0, c1, c2, c3, c4, c5, c6, c7,
+		c8, c9, c10, c11, c12, c13, c14, c15,
+		c16, c17, c18, c19, c20, c21, c22, c23,
+		c24, c25, c26, c27, c28, c29, c30, c31,
+		c32, c33, c34, c35, c36, c37, c38, c39,
+		c40, c41, c42, c43, c44, c45, c46, c47,
+		c48, c49, c50, c51, c52, c53, c54, c55
 	};
+
+	// Only allow 55 as max
+	if (b > 55) b = 55;
+
+	return palette[b];
+
 }
 
 int keyboard_thread( void* memory[] ) {
