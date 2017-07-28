@@ -33,13 +33,17 @@ int main(int argc, char const *argv[])
 	BYTE ram[0xffff] = {
 		iconst, 0x01,
 		gstore, 0xff, 0xfe,
+		iconst, 0x34,
+		gstore, 0xff, 0xfb,
+		iconst, 0x11,
+		gstore, 0xff, 0xfa,
 		iconst, 0x02,
 		gstore, 0xff, 0xfe,
 		halt
 	};
 	WORD start = 0x0000;
 
-	// Run the thread
+	// Run the threads
 	void* data = ram;
 	SDL_Thread* threadID = SDL_CreateThread( keyboard_thread, "Simple", data);
 	SDL_Thread* screenID = SDL_CreateThread( videoCard_thread, "Screen", data);
@@ -56,8 +60,6 @@ int main(int argc, char const *argv[])
 
 	return 0;
 }
-
-
 
 void load_ram(BYTE ram[]) {
 	// Open a file and load all the bytes into ram

@@ -20,10 +20,13 @@ const int SCREEN_HEIGHT = 480;
 // Definitions for memory map
 #define MEM_ASCII 	0xFFFF
 #define MEM_INT		0xFFFE
-#define MEM_XPOS	0xFFFD
-#define MEM_YPOS	0xFFFC
-#define MEM_CNTM	0xFFFB
-#define MEM_COUNT	0xFFFA
-#define MEM_CTCON	0xFFF9
+#define MEM_XPOS	0xFFFD	// Also HI XPOS for graphics
+#define MEM_YPOS	0xFFFC	// Also LOW XPOS for graphics
+#define MEM_CHCOL	0xFFFB	// Also HI YPOS for graphics
+#define MEM_BACOL	0xFFFA	// Also LOW YPOS for graphics
+#define MEM_PICOL	0xFFF9
+#define MEM_CNTM	0xFFF8
+#define MEM_COUNT	0xFFF7
+#define MEM_CTCON	0xFFF6
 
 #endif

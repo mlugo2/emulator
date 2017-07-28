@@ -30,6 +30,8 @@ int videoCard_thread(void* memory[] ) {
 	BYTE x_stop;
 	BYTE y_start;
 	BYTE y_stop;
+	BYTE back_color;
+	BYTE front_color;
 
 	// fuction prototype
 	color get_color(BYTE b);
@@ -76,11 +78,13 @@ int videoCard_thread(void* memory[] ) {
 				y_stop = cursor_y_pos * 14;
 				y_start = ( (y_stop - 14) < 0 ) ? 0 : (y_stop - 14);
 
+				// Get color for char and background
+				front_color = *((BYTE*)memory + MEM_CHCOL);
+				back_color = *((BYTE*)memory + MEM_BACOL);
+
 				// Fill vram given cursor location
 				for (y = y_start; y < y_stop; y++) {
 					for (x = x_start; x < x_stop; x++) {
-						BYTE back_color = 10;
-						BYTE front_color = 30;
 						byte_to_write[y%14][x%8] = ( byte_to_write[y%14][x%8] == 0) ? (back_color) : (front_color);
 						vram[y][x] = byte_to_write[y%14][x%8];
 					}
@@ -91,19 +95,34 @@ int videoCard_thread(void* memory[] ) {
 			}
 
 			// Interrupt for graphics mode
-			// if (*((BYTE*)memory + MEM_INT) == 0x03) { 
+			if (*((BYTE*)memory + MEM_INT) == 0x03) {
 
-			// 	// Get x position
+				BYTE x_hi, x_low, y_hi, y_low, pixel_color;
+				WORD xpos, ypos; 
 
-			// 	// Get y position
+				// Get x position
+				x_hi = *((BYTE*)memory + MEM_XPOS);
+				x_low = *((BYTE*)memory + MEM_YPOS);
+				xpos = 0x0000 | (WORD)x_hi;
+				xpos <<= 8;
+				xpos |= (WORD)x_low;
 
-			// 	// Get color of pixel
+				// Get y position
+				y_hi = *((BYTE*)memory + MEM_CHCOL);
+				y_low = *((BYTE*)memory + MEM_BACOL);
+				ypos = 0x0000 | (WORD)y_hi;
+				ypos <<= 8;
+				ypos |= (WORD)y_low;
 
-			// 	// Draw pixel at given location
+				// Get color of pixel
+				pixel_color = *((BYTE*)memory + MEM_PICOL);
 
-			// 	// Interrupt done
-			// 	*((BYTE*)memory + MEM_INT) = 0x00;
-			// }
+				// Draw pixel at given location
+				vram[ypos][xpos] = pixel_color;
+
+				// Interrupt done
+				*((BYTE*)memory + MEM_INT) = 0x00;
+			}
 
 			// Clear screen
 			SDL_SetRenderDrawColor( gRenderer, 0x00, 0x00, 0x00, 0x00);
