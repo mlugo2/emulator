@@ -21,7 +21,7 @@
 #define pop  0x0f
 #define call 0x10
 #define ret  0x11
-#define halt 0x12
+#define halt 0x19
 
 void cpu(BYTE [], WORD);
 
@@ -39,12 +39,8 @@ void cpu(BYTE ram[], WORD start) {
 	// Start the decoding
 	while (1) {
 
-		int i = 0;
 		// Stop the cpu while the interupt is handled
-		while (ram[MEM_INT] != 0x00) {
-			if (quit)
-				goto stop;
-		}
+		while (ram[MEM_INT] != 0x00) { if (quit) goto stop; }
 
 		// Local temp variables
 		BYTE v, a, b;
@@ -191,8 +187,48 @@ void cpu(BYTE ram[], WORD start) {
 				stack[++sp] = rvalue;
 				break;
 
-			case 0x12:	// halt
+			case 0x12:	// iand
+				b = stack[sp--];
+				a = stack[sp];
+				stack[sp] = a & b;
+				break;
+
+			case 0x13:	// ior
+				b = stack[sp--];
+				a = stack[sp];
+				stack[sp] = a | b;
+				break;
+
+			case 0x14:	// inot
+				a = stack[sp];
+				stack[sp] = ~a;
+				break;
+
+			case 0x15:	// lsft
+				a = stack[sp];
+				stack[sp] = a << 1;
+				break;
+
+			case 0x16:	// rsft
+				a = stack[sp];
+				stack[sp] = a >> 1;
+				break;
+
+			case 0x17:	// rotr
+				a = stack[sp]; 
+				stack[sp] = ( a >> 1) | (a << (7));
+				break;
+
+			case 0x18:	// rotl
+				a = stack[sp];
+				stack[sp] = ( a << 1) | (a >> (7));
+				break;
+
+			case 0x19:	// halt
 				goto stop;
+				break;
+
+			default:	// nop
 				break;
 		}
 
