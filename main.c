@@ -31,14 +31,23 @@ int main(int argc, char const *argv[])
 	
 	// main memory
 	BYTE ram[0xffff] = {
-		iconst, 0x01,
-		gstore, 0xff, 0xfe,
-		iconst, 0x34,
+
+		iconst, 0x37,		// Set color of char to white
 		gstore, 0xff, 0xfb,
-		iconst, 0x11,
+		iconst, 0x00,		// Set color of back to black
 		gstore, 0xff, 0xfa,
-		iconst, 0x02,
+		iconst,	0x00,		// initialize cursor xpos
+		gstore, 0xff, 0xfd,
+
+		iconst, 0x01,		// Get input from keyboard
 		gstore, 0xff, 0xfe,
+		iconst, 0x02,		// print to screen		
+		gstore, 0xff, 0xfe,
+		gload, 0xff, 0xfd,	// get current cursor xpos
+		iconst, 0x01,		// inc by 1
+		iadd,
+		gstore, 0xff, 0xfd,	// set new xpos
+		br, 0x00, 0x0f,
 		halt
 	};
 	WORD start = 0x0000;
@@ -64,4 +73,3 @@ int main(int argc, char const *argv[])
 void load_ram(BYTE ram[]) {
 	// Open a file and load all the bytes into ram
 }
-
