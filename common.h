@@ -17,6 +17,9 @@ typedef short unsigned int WORD;	// 16-bits
 const int SCREEN_WIDTH = 640;
 const int SCREEN_HEIGHT = 480;
 
+// #define SCREEN_WIDTH 320
+// #define SCREEN_HEIGHT 240
+
 // Definitions for memory map
 #define MEM_ASCII 	0xFFFF
 #define MEM_INT		0xFFFE
