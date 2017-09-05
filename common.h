@@ -14,8 +14,8 @@ typedef unsigned char BYTE;			// 8-bits
 typedef short unsigned int WORD;	// 16-bits
 
 // Screen dimensions constants
-const int SCREEN_WIDTH = 320;
-const int SCREEN_HEIGHT = 240;
+#define SCREEN_WIDTH  640
+#define SCREEN_HEIGHT 480
 
 // #define SCREEN_WIDTH 320
 // #define SCREEN_HEIGHT 240

@@ -22,17 +22,18 @@ int videoCard_thread(void* memory[] ) {
 	int x, y;
 
 	// VRAM
-	BYTE vram[480][640];
+	BYTE vram[SCREEN_HEIGHT][SCREEN_WIDTH];
 
 	BYTE cursor_x_pos;
 	BYTE cursor_y_pos;
-	BYTE x_start;
-	BYTE x_stop;
-	BYTE y_start;
-	BYTE y_stop;
 	BYTE back_color;
 	BYTE front_color;
 	BYTE ascii;
+
+	WORD x_start;
+	WORD x_stop;
+	WORD y_start;
+	WORD y_stop;
 
 	// fuction prototype
 	color get_color(BYTE b);
@@ -44,7 +45,7 @@ int videoCard_thread(void* memory[] ) {
 		}
 	}
 
-	BYTE byte_to_write[14][8];
+	BYTE byte_to_write[CHAR_HEIGHT][CHAR_WIDTH];
 
 	// Start up SDL and create window
 	if ( !init_screen() ) {
@@ -64,19 +65,24 @@ int videoCard_thread(void* memory[] ) {
 			if (*((BYTE*)memory + MEM_INT) == 0x02) { 
 
 				// Get char byte from code page
-				// TODO: actually pass the hex to codePage[]
+
+				// TESTING
 				ascii = *((BYTE*)memory + MEM_ASCII);
-				memcpy(byte_to_write, codePage[ascii], sizeof(byte_to_write));
+				memcpy(byte_to_write, test, sizeof(byte_to_write));
+				// TESTING
 
 				// // Get X and Y pos for the cursor
 				cursor_x_pos = *((BYTE*)memory + MEM_XPOS) + 1;
 				cursor_y_pos = *((BYTE*)memory + MEM_YPOS) + 1;
 
+				// Max it out
+				if (cursor_x_pos > 40) cursor_x_pos = 40;
+
 				// Calculate where this char starts and stops in VRAM
-				x_stop = cursor_x_pos * 8;
-				x_start = ( (x_stop - 8) < 0 ) ? 0 : (x_stop - 8);
-				y_stop = cursor_y_pos * 14;
-				y_start = ( (y_stop - 14) < 0 ) ? 0 : (y_stop - 14);
+				x_stop = cursor_x_pos * CHAR_WIDTH;
+				x_start = ( (x_stop - CHAR_WIDTH) < 0 ) ? 0 : (x_stop - CHAR_WIDTH);
+				y_stop = cursor_y_pos * CHAR_HEIGHT;
+				y_start = ( (y_stop - CHAR_HEIGHT) < 0 ) ? 0 : (y_stop - CHAR_HEIGHT);
 
 				// Get color for char and background
 				front_color = *((BYTE*)memory + MEM_CHCOL);
@@ -85,8 +91,8 @@ int videoCard_thread(void* memory[] ) {
 				// Fill vram given cursor location
 				for (y = y_start; y < y_stop; y++) {
 					for (x = x_start; x < x_stop; x++) {
-						byte_to_write[y%14][x%8] = ( byte_to_write[y%14][x%8] == 0) ? (back_color) : (front_color);
-						vram[y][x] = byte_to_write[y%14][x%8];
+						byte_to_write[y%CHAR_HEIGHT][x%CHAR_WIDTH] = ( byte_to_write[y%CHAR_HEIGHT][x%CHAR_WIDTH] == 0) ? (back_color) : (front_color);
+						vram[y][x] = byte_to_write[y%CHAR_HEIGHT][x%CHAR_WIDTH];
 					}
 				}
 
@@ -114,11 +120,18 @@ int videoCard_thread(void* memory[] ) {
 				ypos <<= 8;
 				ypos |= (WORD)y_low;
 
+				// pixel scaling
+				xpos *= 2;
+				ypos *= 2;
+
 				// Get color of pixel
 				pixel_color = *((BYTE*)memory + MEM_PICOL);
 
 				// Draw pixel at given location
 				vram[ypos][xpos] = pixel_color;
+				vram[ypos+1][xpos] = pixel_color;
+				vram[ypos][xpos+1] = pixel_color;
+				vram[ypos+1][xpos+1] = pixel_color;
 
 				// Interrupt done
 				*((BYTE*)memory + MEM_INT) = 0x00;
@@ -425,7 +438,8 @@ int keyboard_thread( void* memory[] ) {
 			// Set SFR to allow CPU to continue
 			*((BYTE*)memory + MEM_INT) = 0x00;
 		}
-		// TODO change this to sdl_delay()
+		
+		// Delay
 		SDL_Delay(210);
 	}
 	
