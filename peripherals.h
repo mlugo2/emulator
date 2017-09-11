@@ -512,7 +512,6 @@ end:	while( !quit ) {
 			// TODO
 		}
 		
-		printf("Timer done\n");
 	} // end of while
 	
 }

@@ -118,6 +118,12 @@ void cpu(BYTE ram[], WORD start) {
 				break;
 
 			case 0x0a:	// load
+				// Debug
+				printf("PC: %x\n", pc);
+				printf("ram[] %d\n",(signed int)ram[pc++] );
+				exit(1);	
+				// Debug
+
 				v = ram[pc++];
 				stack[++sp] = stack[fp+v];
 				break;

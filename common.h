@@ -9,16 +9,14 @@ typedef enum bool {
 // Main loop flag
 bool quit = false;
 
-// Data types for the cpu
-typedef unsigned char BYTE;			// 8-bits
-typedef short unsigned int WORD;	// 16-bits
+// Data types
+typedef signed	 char	   SBYTE;	// signed	 8-bits	
+typedef unsigned char 	   BYTE;	// unsisgned 8-bits
+typedef short unsigned int WORD;	// unsigned  16-bits
 
 // Screen dimensions constants
 #define SCREEN_WIDTH  640
 #define SCREEN_HEIGHT 480
-
-// #define SCREEN_WIDTH 320
-// #define SCREEN_HEIGHT 240
 
 // Definitions for memory map
 #define MEM_ASCII 	0xFFFF
