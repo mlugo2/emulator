@@ -30,4 +30,23 @@ typedef short unsigned int WORD;	// unsigned  16-bits
 #define MEM_COUNT	0xFFF7
 #define MEM_CTCON	0xFFF6
 
+// Function prototypes
+WORD byte_to_word(BYTE, BYTE);
+
+WORD byte_to_word(BYTE a, BYTE b) {
+	WORD ret_val;
+	ret_val= 0x0000 | (WORD)a;
+	ret_val <<= 8;
+	ret_val |= (WORD)b;
+	return ret_val;
+}
+
+void word_to_bytes(WORD, BYTE*, BYTE*);
+
+void word_to_bytes(WORD w, BYTE *hi, BYTE *low) {
+	*low = w;
+	w >>= 8;
+	*hi = w;
+}
+
 #endif
