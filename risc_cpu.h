@@ -12,6 +12,8 @@ void risc_cpu(BYTE mem[], BYTE sp, WORD start) {
 
 	BYTE a;				// temp variables
 	BYTE b;
+	BYTE c;
+	WORD d;
 
 	// Initialization
 	reg[0x00] = 0;		// reg0 should always be zero
@@ -19,9 +21,16 @@ void risc_cpu(BYTE mem[], BYTE sp, WORD start) {
 
 	// Start the decoding
 	while (1) {
+
+		printf("mem[MEM_INT]: %x\n", mem[MEM_INT]);
+
+		// Stop the cpu while the interupt is handled
+		while (mem[MEM_INT] != 0x00) { if (quit) goto end; }
 		
 		// Fetch
 		opcode = mem[pc++];
+
+		//printf("opcode: %x\n", opcode);
 
 		// Decode
 		switch(opcode) {
@@ -51,10 +60,16 @@ void risc_cpu(BYTE mem[], BYTE sp, WORD start) {
 			case 0x07:	// div
 				break;
 			case 0x08:	// divu
+				a = reg[mem[pc++]];
+				b = reg[mem[pc++]];
+				lo = a / b;
+				hi = a % b;
+				pc+=2;
 				break;
 			case 0x09:	// mult
 				break;
 			case 0x0A:	// multu
+				lo = reg[mem[pc++]] * reg[mem[pc++]]; pc++; pc++;
 				break;
 			case 0x0B:	// nor
 				reg[mem[pc++]] = ~(reg[mem[pc++]] | reg[mem[pc++]]); pc++;
@@ -146,20 +161,25 @@ void risc_cpu(BYTE mem[], BYTE sp, WORD start) {
 
 			case 0x22:	// j
 				pc = byte_to_word(mem[pc++], mem[pc++]);
-				pc++; pc++;
+				pc+=2;
 				break;
 			case 0x23:	// jal
 				word_to_bytes(pc, &a, &b);
 				reg[30] = lo;
 				reg[31] = hi;
 				pc = byte_to_word(mem[pc++], mem[pc++]);
-				pc++; pc++;
+				pc+=2;
 				break;
 			case 0x24:	// jalr
+				word_to_bytes(pc, &a, &b);
+				reg[30] = lo;
+				reg[31] = hi;
+				pc = byte_to_word(reg[mem[pc++]], reg[mem[pc++]]);
+				pc+=2;
 				break;
 			case 0x25:	// jr
-				pc = byte_to_word(rem[mem[pc++]], rem[mem[pc++]]);
-				pc++; pc++;
+				pc = byte_to_word(reg[mem[pc++]], reg[mem[pc++]]);
+				pc+=2;
 				break;
 
 			/*****************************************
@@ -183,7 +203,16 @@ void risc_cpu(BYTE mem[], BYTE sp, WORD start) {
 			 *****************************************/
 
 			case 0x2B:	// sb
-				mem[byte_to_word(reg[mem[pc++]], reg[mem[pc++]])] = reg[mem[pc++]];
+				a = reg[mem[pc++]];
+				b = reg[mem[pc++]];
+				c = reg[mem[pc++]];
+				d = byte_to_word(b, c);
+
+				printf("Store instruction: \n");
+				printf("mem[%x] = %x\n", d, a);
+				printf("----------------------\n");
+				mem[d] = a;
+				pc++;
 				break;
 			case 0x2C:	// sh
 				break;
@@ -195,12 +224,16 @@ void risc_cpu(BYTE mem[], BYTE sp, WORD start) {
 			 *****************************************/
 
 			case 0x2E:	// mfhi
+				reg[mem[pc++]] = hi; pc+=3;
 				break;
 			case 0x2F:	// mflo
+				reg[mem[pc++]] = lo; pc+=3;
 				break;
 			case 0x30:	// mthi
+				hi = reg[mem[pc++]]; pc+=3;
 				break;
 			case 0x31:	// mtlo
+				lo = reg[mem[pc++]]; pc+=3;
 				break;
 
 			/*****************************************
@@ -208,17 +241,38 @@ void risc_cpu(BYTE mem[], BYTE sp, WORD start) {
 			 *****************************************/
 
 			case 0x32:	// tr1
+				reg[26] = 0xff;
+				reg[27] = 0xfe;
+				pc+=4;
 				break;
-			case 0x33:	// tr5
+			case 0x33:	// tr2
+				reg[26] = 0xff;
+				reg[27] = 0xfd;
+				pc+=4;
 				break;
-			case 0x34:	// tr10
+			case 0x34:	// tr3
+				reg[26] = 0xff;
+				reg[27] = 0xfc;
+				pc+=4;
 				break;
-			case 0x35:	// tr101
+			case 0x35:	// tr4
+				reg[26] = 0xff;
+				reg[27] = 0xfb;
+				pc+=4;
 				break;
-			case 0x36:	// tr102
+			case 0x36:	// tr5
+				reg[26] = 0xff;
+				reg[27] = 0xfa;
+				pc+=4;
+				break;
+			case 0x37:	// tr6
+				reg[26] = 0xff;
+				reg[27] = 0xf9;
+				pc+=4;
 				break;
 			
 			default:
+				printf("program end.\n");
 				goto end;
 				break;
 		} // end of switch
