@@ -12,8 +12,6 @@ void risc_cpu(BYTE mem[], BYTE sp, WORD start) {
 
 	BYTE a;				// temp variables
 	BYTE b;
-	BYTE c;
-	WORD d;
 
 	// Initialization
 	reg[0x00] = 0;		// reg0 should always be zero
@@ -21,8 +19,6 @@ void risc_cpu(BYTE mem[], BYTE sp, WORD start) {
 
 	// Start the decoding
 	while (1) {
-
-		printf("mem[MEM_INT]: %x\n", mem[MEM_INT]);
 
 		// Stop the cpu while the interupt is handled
 		while (mem[MEM_INT] != 0x00) { if (quit) goto end; }
@@ -186,7 +182,7 @@ void risc_cpu(BYTE mem[], BYTE sp, WORD start) {
 			 *	Load Instructions					 *
 			 *****************************************/	
 			case 0x26:	// lb
-				reg[mem[pc++]] = mem[byte_to_word(reg[mem[pc++]], reg[mem[pc++]])];
+				reg[mem[pc++]] = mem[byte_to_word(mem[pc++], mem[pc++])];
 				pc++;
 				break;
 			case 0x27:	// lbu
@@ -204,14 +200,7 @@ void risc_cpu(BYTE mem[], BYTE sp, WORD start) {
 
 			case 0x2B:	// sb
 				a = reg[mem[pc++]];
-				b = reg[mem[pc++]];
-				c = reg[mem[pc++]];
-				d = byte_to_word(b, c);
-
-				printf("Store instruction: \n");
-				printf("mem[%x] = %x\n", d, a);
-				printf("----------------------\n");
-				mem[d] = a;
+				mem[byte_to_word(mem[pc++], mem[pc++])] = a;
 				pc++;
 				break;
 			case 0x2C:	// sh
@@ -240,42 +229,44 @@ void risc_cpu(BYTE mem[], BYTE sp, WORD start) {
 			 *	Execption and Interrupt Instructions *
 			 *****************************************/
 
-			case 0x32:	// tr1
-				reg[26] = 0xff;
-				reg[27] = 0xfe;
+			case 0x32:	// trap1 - inturrupt selection
+				a = reg[0x01];
+				mem[0xFFFE] = a;
 				pc+=4;
 				break;
-			case 0x33:	// tr2
-				reg[26] = 0xff;
-				reg[27] = 0xfd;
+			case 0x33:	// trap2 - xpos/x-hi
+				a = reg[0x01];
+				mem[0xFFFD] = a;
 				pc+=4;
 				break;
-			case 0x34:	// tr3
-				reg[26] = 0xff;
-				reg[27] = 0xfc;
+			case 0x34:	// trap3 - ypos/x-lo
+				a = reg[0x01];
+				mem[0xFFFC] = a;
 				pc+=4;
 				break;
-			case 0x35:	// tr4
-				reg[26] = 0xff;
-				reg[27] = 0xfb;
+			case 0x35:	// trap4 - char color/y-hi
+				a = reg[0x01];
+				mem[0xFFFB] = a;
 				pc+=4;
 				break;
-			case 0x36:	// tr5
-				reg[26] = 0xff;
-				reg[27] = 0xfa;
+			case 0x36:	// trap5 - char back/y-low
+				a = reg[0x01];
+				mem[0xFFFA] = a;
 				pc+=4;
 				break;
-			case 0x37:	// tr6
-				reg[26] = 0xff;
-				reg[27] = 0xf9;
+			case 0x37:	// trap6 - pixel color
+				a = reg[0x01];
+				mem[0xFFF9] = a;
 				pc+=4;
 				break;
 			
 			default:
-				printf("program end.\n");
 				goto end;
 				break;
 		} // end of switch
+
+		reg[0x00] = 0;		// reg0 should always be zero
+
 	} // end of while
 	end:	return;
 }

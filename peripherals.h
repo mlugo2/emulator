@@ -68,7 +68,7 @@ int videoCard_thread(void* memory[] ) {
 
 				// TESTING
 				ascii = *((BYTE*)memory + MEM_ASCII);
-				memcpy(byte_to_write, test, sizeof(byte_to_write));
+				memcpy(byte_to_write, codePage[ascii], sizeof(byte_to_write));
 				// TESTING
 
 				// // Get X and Y pos for the cursor
