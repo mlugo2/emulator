@@ -1,21 +1,23 @@
 #include "common.h"
 
-void risc_cpu(BYTE [], BYTE, WORD);
+void risc_cpu(DWORD [], DWORD);
 
-void risc_cpu(BYTE mem[], BYTE sp, WORD start) {
+void risc_cpu(DWORD mem[], DWORD pc) {
 
-	// The setup
-	BYTE reg[0x20];		// 8-bit wide registers
-	BYTE hi, lo;
-	BYTE opcode;
-	WORD pc;
+	DWORD reg[0x20];
+	DWORD instruction;
+	DWORD temp32, hi, lo;
+	QWORD temp64;
 
-	BYTE a;				// temp variables
-	BYTE b;
+	BYTE opcode, rsReg, rtReg, rdReg,
+		 shft, funct;
+
+	WORD imm16;
+
+	DWORD target26;
 
 	// Initialization
-	reg[0x00] = 0;		// reg0 should always be zero
-	pc = start;
+	reg[0x00] = 0;			// reg0 should always be zero
 
 	// Start the decoding
 	while (1) {
@@ -24,9 +26,22 @@ void risc_cpu(BYTE mem[], BYTE sp, WORD start) {
 		while (mem[MEM_INT] != 0x00) { if (quit) goto end; }
 		
 		// Fetch
-		opcode = mem[pc++];
+		instruction = mem[pc++];
+		opcode = get_opcode(instruction);
+		rsReg  = get_rs(instruction);
+		rtReg  = get_rt(instruction);
+		rdReg  = get_rd(instruction);
+		shft   = get_sa(instruction);
+		funct  = get_funct(instruction);
+		imm16  = get_imm16(instruction);
+		target26 = get_target26(instruction);
 
-		//printf("opcode: %x\n", opcode);
+		// printf("opcode: %x\n", opcode);
+		// printf("rs: %x\n", 	   rsReg);
+		// printf("imm16: %x\n",  imm16);
+
+		// char c;
+		// scanf("%c", &c);
 
 		// Decode
 		switch(opcode) {
@@ -36,72 +51,69 @@ void risc_cpu(BYTE mem[], BYTE sp, WORD start) {
 			 *****************************************/
 
 			case 0x01:	// add
-				
 				break;
 			case 0x02:	// addu
-				reg[mem[pc++]] = reg[mem[pc++]] + reg[mem[pc++]]; pc++;
+				reg[rdReg] = reg[rsReg] + reg[rtReg];
 				break;
 			case 0x03:	// addi
-				
 				break;
 			case 0x04:	// addiu
-				reg[mem[pc++]] = reg[mem[pc++]] + mem[pc++]; pc++;
+				reg[rtReg] = reg[rsReg] + ((DWORD)imm16);
 				break;
 			case 0x05:	// and
-				reg[mem[pc++]] = reg[mem[pc++]] & reg[mem[pc++]]; pc++;
+				reg[rdReg] = reg[rsReg] & reg[rtReg];
 				break;
 			case 0x06:	// andi
-				reg[mem[pc++]] = reg[mem[pc++]] & mem[pc++]; pc++;
+				reg[rdReg] = reg[rsReg] & (((DWORD)imm16) << 16);
 				break;
 			case 0x07:	// div
 				break;
 			case 0x08:	// divu
-				a = reg[mem[pc++]];
-				b = reg[mem[pc++]];
-				lo = a / b;
-				hi = a % b;
-				pc+=2;
+				lo = reg[rsReg]/reg[rtReg];
+				hi = reg[rsReg]%reg[rtReg];
 				break;
 			case 0x09:	// mult
 				break;
 			case 0x0A:	// multu
-				lo = reg[mem[pc++]] * reg[mem[pc++]]; pc++; pc++;
+				temp64 = reg[rsReg] * reg[rtReg];
+				lo = (DWORD) temp64;
+				hi = (DWORD)(temp64 >>= 31);
 				break;
 			case 0x0B:	// nor
-				reg[mem[pc++]] = ~(reg[mem[pc++]] | reg[mem[pc++]]); pc++;
+				reg[rdReg] = ~(reg[rsReg] | reg[rtReg]);
 				break;
 			case 0x0C:	// or
-				reg[mem[pc++]] = reg[mem[pc++]] | reg[mem[pc++]]; pc++;
+				reg[rdReg] = reg[rsReg] | reg[rtReg];
 				break;
 			case 0x0D:	// ori
-				reg[mem[pc++]] = reg[mem[pc++]] | mem[pc++]; pc++;
+				reg[rdReg] = reg[rsReg] & (((DWORD)imm16) << 16);
 				break;
 			case 0x0E:	// sll
-				reg[mem[pc++]] = reg[mem[pc++]] << mem[pc++]; pc++;
+				reg[rdReg] = reg[rtReg] << reg[shft];
 				break;
 			case 0x0F:	// sllv
-				reg[mem[pc++]] = reg[mem[pc++]] << reg[mem[pc++]]; pc++;
+				reg[rdReg] = reg[rtReg] << reg[rsReg];
 				break;
 			case 0x10:	// sra
 				break;
 			case 0x11:	// srav
 				break;
 			case 0x12:	// srl
-				reg[mem[pc++]] = reg[mem[pc++]] >> mem[pc++]; pc++;
+				reg[rdReg] = reg[rtReg] >> reg[shft];
 				break;
 			case 0x13:	// srlv
-				reg[mem[pc++]] = reg[mem[pc++]] >> reg[mem[pc++]]; pc++;
+				reg[rdReg] = reg[rtReg] >> reg[rsReg];
 				break;
 			case 0x14:	// sub
 				break;
 			case 0x15:	// subu
-				reg[mem[pc++]] = reg[mem[pc++]] - reg[mem[pc++]]; pc++;
+				reg[rdReg] = reg[rsReg] - reg[rtReg];
 				break;
 			case 0x16:	// xor
-				reg[mem[pc++]] = reg[mem[pc++]] ^ reg[mem[pc++]]; pc++;
+				reg[rdReg] = reg[rsReg] ^ reg[rtReg];
 				break;
 			case 0x17:	// xori
-				reg[mem[pc++]] = reg[mem[pc++]] ^ mem[pc++]; pc++;
+				reg[rdReg] = reg[rsReg] ^ (((DWORD)imm16) << 16);
 				break;
 
 			/*****************************************
@@ -120,14 +132,12 @@ void risc_cpu(BYTE mem[], BYTE sp, WORD start) {
 			case 0x1A:	// slt
 				break;
 			case 0x1B:	// sltu
-				reg[mem[pc++]] = ( reg[mem[pc++]] < reg[mem[pc++]] ) ? 1:0;
-				pc++;
+				reg[rdReg] = ( reg[rsReg] < reg[rtReg] ) ? 1:0;
 				break;
 			case 0x1C:	// slti
 				break;
 			case 0x1D:	// sltiu
-				reg[mem[pc++]] = ( reg[mem[pc++]] < mem[pc++] ) ? 1:0;
-				pc++;
+				reg[rdReg] = (reg[rsReg] < (((DWORD)imm16) << 16)) ? 1:0;
 				break;
 
 			/*****************************************
@@ -135,20 +145,18 @@ void risc_cpu(BYTE mem[], BYTE sp, WORD start) {
 			 *****************************************/
 
 			case 0x1E:	// beq
-				pc = ( reg[mem[pc++]] == reg[mem[pc++]] ) ? 
-				(byte_to_word(mem[pc++], mem[pc++])):pc;
+				if ( reg[rsReg] == reg[rtReg] )
+					pc += (imm16 << 2); 
 				break;
 			case 0x1F:	// bgtz
-				pc = ( reg[mem[pc++]] > reg[mem[pc++]] ) ? 
-				(byte_to_word(mem[pc++], mem[pc++])):pc;
+				if ( reg[rsReg] > 0 )
+					pc += (imm16 << 2);
 				break;
 			case 0x20:	// blez
-				pc = ( reg[mem[pc++]] <= reg[mem[pc++]] ) ? 
-				(byte_to_word(mem[pc++], mem[pc++])):pc;
 				break;
 			case 0x21:	// bne
-				pc = ( reg[mem[pc++]] != reg[mem[pc++]] ) ? 
-				(byte_to_word(mem[pc++], mem[pc++])):pc;
+				if ( reg[rsReg] != reg[rtReg] )
+					pc += (imm16 << 2); 
 				break;
 
 			/*****************************************
@@ -156,40 +164,32 @@ void risc_cpu(BYTE mem[], BYTE sp, WORD start) {
 			 *****************************************/
 
 			case 0x22:	// j
-				pc = byte_to_word(mem[pc++], mem[pc++]);
-				pc+=2;
+				pc = (target26 << 2);
 				break;
 			case 0x23:	// jal
-				word_to_bytes(pc, &a, &b);
-				reg[30] = lo;
-				reg[31] = hi;
-				pc = byte_to_word(mem[pc++], mem[pc++]);
-				pc+=2;
+				reg[31] = pc;
+				pc = (target26 << 2);
 				break;
 			case 0x24:	// jalr
-				word_to_bytes(pc, &a, &b);
-				reg[30] = lo;
-				reg[31] = hi;
-				pc = byte_to_word(reg[mem[pc++]], reg[mem[pc++]]);
-				pc+=2;
+				reg[31] = reg[rdReg];
+				pc = reg[rsReg];
 				break;
 			case 0x25:	// jr
-				pc = byte_to_word(reg[mem[pc++]], reg[mem[pc++]]);
-				pc+=2;
+				pc = reg[rsReg];
 				break;
 
 			/*****************************************
 			 *	Load Instructions					 *
 			 *****************************************/	
 			case 0x26:	// lb
-				reg[mem[pc++]] = mem[byte_to_word(mem[pc++], mem[pc++])];
-				pc++;
 				break;
 			case 0x27:	// lbu
+				reg[rtReg] = mem[rsReg + imm16] & 0x000000FF;
 				break;
 			case 0x28:	// lh
 				break;
 			case 0x29:	// lhu
+				reg[rtReg] = mem[rsReg + imm16] & 0x0000FFFF;
 				break;
 			case 0x2A:	// lw
 				break;
@@ -199,13 +199,11 @@ void risc_cpu(BYTE mem[], BYTE sp, WORD start) {
 			 *****************************************/
 
 			case 0x2B:	// sb
-				a = reg[mem[pc++]];
-				mem[byte_to_word(mem[pc++], mem[pc++])] = a;
-				pc++;
 				break;
 			case 0x2C:	// sh
 				break;
 			case 0x2D:	// sw
+				mem[rsReg + imm16] = reg[rtReg];
 				break;
 
 			/*****************************************
@@ -213,16 +211,16 @@ void risc_cpu(BYTE mem[], BYTE sp, WORD start) {
 			 *****************************************/
 
 			case 0x2E:	// mfhi
-				reg[mem[pc++]] = hi; pc+=3;
+				reg[rdReg] = hi;
 				break;
 			case 0x2F:	// mflo
-				reg[mem[pc++]] = lo; pc+=3;
+				reg[rdReg] = lo;
 				break;
 			case 0x30:	// mthi
-				hi = reg[mem[pc++]]; pc+=3;
+				hi = reg[rsReg];
 				break;
 			case 0x31:	// mtlo
-				lo = reg[mem[pc++]]; pc+=3;
+				lo = reg[rsReg];
 				break;
 
 			/*****************************************
@@ -230,34 +228,22 @@ void risc_cpu(BYTE mem[], BYTE sp, WORD start) {
 			 *****************************************/
 
 			case 0x32:	// trap1 - inturrupt selection
-				a = reg[0x01];
-				mem[0xFFFE] = a;
-				pc+=4;
+				mem[MEM_INT] = reg[0x01];
 				break;
 			case 0x33:	// trap2 - xpos/x-hi
-				a = reg[0x01];
-				mem[0xFFFD] = a;
-				pc+=4;
+				mem[0xFFFD] = reg[0x01];
 				break;
 			case 0x34:	// trap3 - ypos/x-lo
-				a = reg[0x01];
-				mem[0xFFFC] = a;
-				pc+=4;
+				mem[0xFFFC] = reg[0x01];
 				break;
-			case 0x35:	// trap4 - char color/y-hi
-				a = reg[0x01];
-				mem[0xFFFB] = a;
-				pc+=4;
+			case 0x35:	// trap4 - char color font/y-hi
+				mem[0xFFFB] = reg[0x01];
 				break;
-			case 0x36:	// trap5 - char back/y-low
-				a = reg[0x01];
-				mem[0xFFFA] = a;
-				pc+=4;
+			case 0x36:	// trap5 - char color back/y-low
+				mem[0xFFFA] = reg[0x01];
 				break;
 			case 0x37:	// trap6 - pixel color
-				a = reg[0x01];
-				mem[0xFFF9] = a;
-				pc+=4;
+				mem[0xFFF9] = reg[0x01];
 				break;
 			
 			default:

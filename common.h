@@ -10,9 +10,10 @@ typedef enum bool {
 bool quit = false;
 
 // Data types
-typedef signed	 char	   SBYTE;	// signed	 8-bits	
-typedef unsigned char 	   BYTE;	// unsisgned 8-bits
-typedef short unsigned int WORD;	// unsigned  16-bits
+typedef unsigned char 	   		BYTE;	// unsigned  8-bits
+typedef short unsigned int 		WORD;	// unsigned  16-bits
+typedef unsigned long int  		DWORD;	// unsigned  32-bits
+typedef unsigned long long      QWORD;	// unsigned  64-bits
 
 // Screen dimensions constants
 #define SCREEN_WIDTH  640
@@ -32,6 +33,16 @@ typedef short unsigned int WORD;	// unsigned  16-bits
 
 // Function prototypes
 WORD byte_to_word(BYTE, BYTE);
+void word_to_bytes(WORD, BYTE*, BYTE*);
+
+BYTE get_opcode(DWORD);
+BYTE get_rs(DWORD);
+BYTE get_rt(DWORD);
+BYTE get_rd(DWORD);
+BYTE get_sa(DWORD);
+BYTE get_funct(DWORD);
+WORD get_imm16(DWORD);
+DWORD get_target26(DWORD);
 
 WORD byte_to_word(BYTE a, BYTE b) {
 	WORD ret_val;
@@ -41,12 +52,65 @@ WORD byte_to_word(BYTE a, BYTE b) {
 	return ret_val;
 }
 
-void word_to_bytes(WORD, BYTE*, BYTE*);
-
 void word_to_bytes(WORD w, BYTE *hi, BYTE *low) {
 	*low = w;
 	w >>= 8;
 	*hi = w;
+}
+
+
+BYTE get_opcode(DWORD instruction)
+{
+	// Shift down to last 6 bits
+	instruction >>= 26;
+	return (BYTE) instruction;
+}
+
+BYTE get_rs(DWORD instruction)
+{
+	instruction &= 0x3E00000;
+	instruction >>= 21;
+	return (BYTE) instruction;
+}
+
+BYTE get_rt(DWORD instruction)
+{
+	instruction &= 0x1F0000;
+	instruction >>= 16;
+	return (BYTE) instruction;
+}
+
+BYTE get_rd(DWORD instruction)
+{
+	instruction &= 0xF800;
+	instruction >>= 11;
+	return (BYTE) instruction;
+}
+
+
+BYTE get_sa(DWORD instruction)
+{
+	instruction &= 0x3E0;
+	instruction >>=6;
+	return (BYTE) instruction;
+}
+
+BYTE get_funct(DWORD instruction)
+{
+	instruction &= 0x1F;
+	return (BYTE) instruction;
+}
+
+WORD get_imm16(DWORD instruction)
+{
+	instruction &= 0xFFFF;
+	return (WORD) instruction;
+}
+
+DWORD get_target26(DWORD instruction)
+{
+	instruction &= 0x3FFFFFF;
+	return instruction;
 }
 
 #endif

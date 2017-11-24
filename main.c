@@ -2,7 +2,6 @@
 #include <unistd.h>
 #include "common.h"
 #include "screen.h"
-#include "cpu.h"
 #include "risc_cpu.h"
 #include "peripherals.h"
 
@@ -16,73 +15,60 @@
 	
 		This is the Sunflower computer system.  This is a simulation of a
 	complete computing system, including: cpu, memory, I/O, and display--
-	and anything else I can think of duck tapping on to this thing 
+	and anything else I can think of duck tapping on to this thing.
 
 	Description:
 	------------
 
-		The Sunflower computer system has a risc or stack micro-architecture.
+		The Sunflower computer system has a risc architecture.
 
 */
 
-// Function prototypes
-void load_ram(BYTE []);
-
 int main(int argc, char const *argv[])
 {
-	printf("Hello world!\n");
+	// main memory 1MB
+	// DWORD *mem;
+	// mem = malloc(sizeof(DWORD)*0x3FFFFFFF);
+	// memset(mem, 0, sizeof(DWORD)*0x3FFFFFFF);
 
-	// main memory
-	BYTE mem[0xffff] = {
-		// Set x,y pos for cursor
-		0x33, 0x00, 0x00, 0x00, 0x00,
-		0x2b, 0x00, 26, 27, 0x00, 
-		0x34, 0x00, 0x00, 0x00, 0x00,
-		0x2b, 0x00, 26, 27, 0x00,
+	DWORD mem[0xFFFF] = {
+		/* Set font color */
+		0x10010008,		// addiu $1, 0x08
+		0xD4000000,		// trap4 color font
 
-		// Set color for text
-		0x35, 0x00, 0x00, 0x00, 0x00,
-		0x04, 0x01, 0x00, 0x13, 0x00,
-		0x2b, 0x01, 26, 27, 0x00,
+		/* Set background color */
+		0x1001000F,		// addiu $1, 0x0F
+		0xD8000000,		// trap5 background color
 
-		0x36, 0x00, 0x00, 0x00, 0x00,
-		0x04, 0x01, 0x00, 0x2c, 0x00,
-		0x2b, 0x01, 26, 27, 0x00,
+		/* Set cursor X and Y pos to 0 */
+		0x10010000,		// addiu $1, 0x00
+		0xCC000000,		// trap2 X pos
+		0xD0000000,		// trap3 Y pos
 
-		// Call keyboard interrupt
-		0x32, 0x00, 0x00, 0x00, 0x00,
-		0x04, 0x01, 0x00, 0x01, 0x00,
-		0x2b, 0x01, 26, 27, 0x00,
+		/* Get char from user */
+		0x10010001,		// addiu $1, 0x01
+		0xC8000000,		// trap1 interrupt selection
 
-		// print to screen
-		0x32, 0x00, 0x00, 0x00, 0x00,
-		0x04, 0x01, 0x00, 0x02, 0x00,
-		0x2b, 0x01, 26, 27, 0x00,
-		0xff
+		/* Print char */
+		0x10010002,		// addiu $1, 0x02
+		0xC8000000,		// trap1 interrupt selection
 	};
 
-
-	WORD start = 0x0000;
+	DWORD start = 0;
 
 	// Run the threads
 	void* data = mem;
-	SDL_Thread* threadID = SDL_CreateThread( keyboard_thread, "Key", data);
+	SDL_Thread* keyID = SDL_CreateThread( keyboard_thread, "Key", data);
 	SDL_Thread* screenID = SDL_CreateThread( videoCard_thread, "Screen", data);
 	SDL_Thread* clockID = SDL_CreateThread( clock_thread, "Clock", data);
 
-	// Da CPU
-	// cpu(mem, start);
-
-	risc_cpu(mem, 0, start);
+	// The CPU
+	risc_cpu(mem, start);
 
 	// Remove timer in case the call back was not called
 	SDL_WaitThread( screenID, NULL);
-	SDL_WaitThread( threadID, NULL);
+	SDL_WaitThread( keyID, NULL);
 	SDL_WaitThread( clockID, NULL);
 
 	return 0;
-}
-
-void load_ram(BYTE mem[]) {
-	// Open a file and load all the bytes into mem
 }

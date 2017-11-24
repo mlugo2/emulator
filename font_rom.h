@@ -3996,7 +3996,7 @@ const BYTE** codePage[0x7F] = {
 	_TWO, _THREE, _FOUR, _FIVE, _SIX, 
 	_SEVEN, _EIGHT, _NINE, _COLON, _SEMICOLON,
 	_OABRACKET, _EQUAL, _CABRACKET, _QUESTM, _AT,
-	_A, _B, _C, _D, _E,								// 69
+	_A, _B, _C, _D, _E,
 	_F, _G, _H, _I, _J,
 	_K, _L, _M, _N, _O,
 	_P, _Q, _R, _S, _T,

@@ -7,7 +7,7 @@ int keyboard_thread( void* memory[] );
 int videoCard_thread( void* memory[] );
 int clock_thread( void* memory[] );
 
-typedef struct color_values {
+typedef struct {
 		int red;
 		int green;
 		int blue;
@@ -62,18 +62,15 @@ int videoCard_thread(void* memory[] ) {
 			}
 
 			// Interrupt for text mode print has been sent.
-			if (*((BYTE*)memory + MEM_INT) == 0x02) { 
+			if (*((DWORD*)memory + MEM_INT) == 0x02) { 
 
 				// Get char byte from code page
-
-				// TESTING
-				ascii = *((BYTE*)memory + MEM_ASCII);
+				ascii = *((DWORD*)memory + MEM_ASCII);
 				memcpy(byte_to_write, codePage[ascii], sizeof(byte_to_write));
-				// TESTING
 
 				// // Get X and Y pos for the cursor
-				cursor_x_pos = *((BYTE*)memory + MEM_XPOS) + 1;
-				cursor_y_pos = *((BYTE*)memory + MEM_YPOS) + 1;
+				cursor_x_pos = *((DWORD*)memory + MEM_XPOS) + 1;
+				cursor_y_pos = *((DWORD*)memory + MEM_YPOS) + 1;
 
 				// Max it out
 				if (cursor_x_pos > 40) cursor_x_pos = 40;
@@ -85,8 +82,8 @@ int videoCard_thread(void* memory[] ) {
 				y_start = ( (y_stop - CHAR_HEIGHT) < 0 ) ? 0 : (y_stop - CHAR_HEIGHT);
 
 				// Get color for char and background
-				front_color = *((BYTE*)memory + MEM_CHCOL);
-				back_color = *((BYTE*)memory + MEM_BACOL);
+				front_color = *((DWORD*)memory + MEM_CHCOL);
+				back_color = *((DWORD*)memory + MEM_BACOL);
 
 				// Fill vram given cursor location
 				for (y = y_start; y < y_stop; y++) {
@@ -97,7 +94,7 @@ int videoCard_thread(void* memory[] ) {
 				}
 
 				// Interrupt done
-				*((BYTE*)memory + MEM_INT) = 0x00;
+				*((DWORD*)memory + MEM_INT) = 0x00;
 			}
 
 			// Interrupt for graphics mode
@@ -168,7 +165,6 @@ int videoCard_thread(void* memory[] ) {
 }
 
 color get_color(BYTE b) {
-
 
 	// Available colors
 	color c0 = {0, 0, 0};
@@ -246,201 +242,262 @@ color get_color(BYTE b) {
 }
 
 int keyboard_thread( void* memory[] ) {
-		
+
+	const int delay = 205;
+
 	// Get key input
 	while (!quit) {
 
 		// Do nothing until the correct signal is passed.
-		while (*((BYTE*)memory + MEM_INT) != 0x01) { if (quit) goto stop; }
+		while (*((DWORD*)memory + MEM_INT) != 0x01) 
+			{ if (quit) goto stop; }
 
 		// Read keyboard input
 		const Uint8* currentKeyStates = SDL_GetKeyboardState( NULL );
 		if ( currentKeyStates[ SDL_SCANCODE_A ]) {
 
 			// Save appropriate ASCII code into memory 
-			*((BYTE*)memory + MEM_ASCII) = 0x41;
+			*((DWORD*)memory + MEM_ASCII) = 0x41;
 
 			// Set SFR to allow CPU to continue
-			*((BYTE*)memory + MEM_INT) = 0x00;
+			*((DWORD*)memory + MEM_INT) = 0x00;
+
+			SDL_Delay(delay);
 		}
 		else if ( currentKeyStates[ SDL_SCANCODE_B ]) {
 			// Save appropriate ASCII code into memory 
-			*((BYTE*)memory + MEM_ASCII) = 0x42;
+			*((DWORD*)memory + MEM_ASCII) = 0x42;
 
 			// Set SFR to allow CPU to continue
-			*((BYTE*)memory + MEM_INT) = 0x00;
+			*((DWORD*)memory + MEM_INT) = 0x00;
+
+			SDL_Delay(delay);
 		}
 		else if ( currentKeyStates[ SDL_SCANCODE_C ]) {
 			// Save appropriate ASCII code into memory 
-			*((BYTE*)memory + MEM_ASCII) = 0x43;
+			*((DWORD*)memory + MEM_ASCII) = 0x43;
 
 			// Set SFR to allow CPU to continue
-			*((BYTE*)memory + MEM_INT) = 0x00;
+			*((DWORD*)memory + MEM_INT) = 0x00;
+
+			SDL_Delay(delay);
 		}
 		else if ( currentKeyStates[ SDL_SCANCODE_D ]) {
 			// Save appropriate ASCII code into memory 
-			*((BYTE*)memory + MEM_ASCII) = 0x44;
+			*((DWORD*)memory + MEM_ASCII) = 0x44;
 
 			// Set SFR to allow CPU to continue
-			*((BYTE*)memory + MEM_INT) = 0x00;
+			*((DWORD*)memory + MEM_INT) = 0x00;
+
+			SDL_Delay(delay);
 		}
 		else if ( currentKeyStates[ SDL_SCANCODE_E ]) {
 			// Save appropriate ASCII code into memory 
-			*((BYTE*)memory + MEM_ASCII) = 0x45;
+			*((DWORD*)memory + MEM_ASCII) = 0x45;
 
 			// Set SFR to allow CPU to continue
-			*((BYTE*)memory + MEM_INT) = 0x00;
+			*((DWORD*)memory + MEM_INT) = 0x00;
+
+			SDL_Delay(delay);
 		}
 		else if ( currentKeyStates[ SDL_SCANCODE_F ]) {
 			// Save appropriate ASCII code into memory 
-			*((BYTE*)memory + MEM_ASCII) = 0x46;
+			*((DWORD*)memory + MEM_ASCII) = 0x46;
 
 			// Set SFR to allow CPU to continue
-			*((BYTE*)memory + MEM_INT) = 0x00;
+			*((DWORD*)memory + MEM_INT) = 0x00;
+
+			SDL_Delay(delay);
 		}
 		else if ( currentKeyStates[ SDL_SCANCODE_G ]) {
 			// Save appropriate ASCII code into memory 
-			*((BYTE*)memory + MEM_ASCII) = 0x47;
+			*((DWORD*)memory + MEM_ASCII) = 0x47;
 
 			// Set SFR to allow CPU to continue
-			*((BYTE*)memory + MEM_INT) = 0x00;
+			*((DWORD*)memory + MEM_INT) = 0x00;
+
+			SDL_Delay(delay);
 		}
 		else if ( currentKeyStates[ SDL_SCANCODE_H ]) {
 			// Save appropriate ASCII code into memory 
-			*((BYTE*)memory + MEM_ASCII) = 0x48;
+			*((DWORD*)memory + MEM_ASCII) = 0x48;
 
 			// Set SFR to allow CPU to continue
-			*((BYTE*)memory + MEM_INT) = 0x00;
+			*((DWORD*)memory + MEM_INT) = 0x00;
+
+			SDL_Delay(delay);
 		}
 		else if ( currentKeyStates[ SDL_SCANCODE_I ]) {
 			// Save appropriate ASCII code into memory 
-			*((BYTE*)memory + MEM_ASCII) = 0x49;
+			*((DWORD*)memory + MEM_ASCII) = 0x49;
 
 			// Set SFR to allow CPU to continue
-			*((BYTE*)memory + MEM_INT) = 0x00;
+			*((DWORD*)memory + MEM_INT) = 0x00;
+
+			SDL_Delay(delay);
 		}
 		else if ( currentKeyStates[ SDL_SCANCODE_J ]) {
 			// Save appropriate ASCII code into memory 
-			*((BYTE*)memory + MEM_ASCII) = 0x4A;
+			*((DWORD*)memory + MEM_ASCII) = 0x4A;
 
 			// Set SFR to allow CPU to continue
-			*((BYTE*)memory + MEM_INT) = 0x00;
+			*((DWORD*)memory + MEM_INT) = 0x00;
+
+			SDL_Delay(delay);
 		}
 		else if ( currentKeyStates[ SDL_SCANCODE_K ]) {
 			// Save appropriate ASCII code into memory 
-			*((BYTE*)memory + MEM_ASCII) = 0x4B;
+			*((DWORD*)memory + MEM_ASCII) = 0x4B;
 
 			// Set SFR to allow CPU to continue
-			*((BYTE*)memory + MEM_INT) = 0x00;
+			*((DWORD*)memory + MEM_INT) = 0x00;
+
+			SDL_Delay(delay);
 		}
 		else if ( currentKeyStates[ SDL_SCANCODE_L ]) {
 			// Save appropriate ASCII code into memory 
-			*((BYTE*)memory + MEM_ASCII) = 0x4C;
+			*((DWORD*)memory + MEM_ASCII) = 0x4C;
 
 			// Set SFR to allow CPU to continue
-			*((BYTE*)memory + MEM_INT) = 0x00;
+			*((DWORD*)memory + MEM_INT) = 0x00;
+
+			SDL_Delay(delay);
 		}
 		else if ( currentKeyStates[ SDL_SCANCODE_M ]) {
 			// Save appropriate ASCII code into memory 
-			*((BYTE*)memory + MEM_ASCII) = 0x4D;
+			*((DWORD*)memory + MEM_ASCII) = 0x4D;
 
 			// Set SFR to allow CPU to continue
-			*((BYTE*)memory + MEM_INT) = 0x00;
+			*((DWORD*)memory + MEM_INT) = 0x00;
+
+			SDL_Delay(delay);
 		}
 		else if ( currentKeyStates[ SDL_SCANCODE_N ]) {
 			// Save appropriate ASCII code into memory 
-			*((BYTE*)memory + MEM_ASCII) = 0x4E;
+			*((DWORD*)memory + MEM_ASCII) = 0x4E;
 
 			// Set SFR to allow CPU to continue
-			*((BYTE*)memory + MEM_INT) = 0x00;
+			*((DWORD*)memory + MEM_INT) = 0x00;
+
+			SDL_Delay(delay);
 		}
 		else if ( currentKeyStates[ SDL_SCANCODE_O ]) {
 			// Save appropriate ASCII code into memory 
-			*((BYTE*)memory + MEM_ASCII) = 0x4F;
+			*((DWORD*)memory + MEM_ASCII) = 0x4F;
 
 			// Set SFR to allow CPU to continue
-			*((BYTE*)memory + MEM_INT) = 0x00;
+			*((DWORD*)memory + MEM_INT) = 0x00;
+
+			SDL_Delay(delay);
 		}
 		else if ( currentKeyStates[ SDL_SCANCODE_P ]) {
 			// Save appropriate ASCII code into memory 
-			*((BYTE*)memory + MEM_ASCII) = 0x50;
+			*((DWORD*)memory + MEM_ASCII) = 0x50;
 
 			// Set SFR to allow CPU to continue
-			*((BYTE*)memory + MEM_INT) = 0x00;
+			*((DWORD*)memory + MEM_INT) = 0x00;
+
+			SDL_Delay(delay);
 		}
 		else if ( currentKeyStates[ SDL_SCANCODE_Q ]) {
 			// Save appropriate ASCII code into memory 
-			*((BYTE*)memory + MEM_ASCII) = 0x51;
+			*((DWORD*)memory + MEM_ASCII) = 0x51;
 
 			// Set SFR to allow CPU to continue
-			*((BYTE*)memory + MEM_INT) = 0x00;
+			*((DWORD*)memory + MEM_INT) = 0x00;
+
+			SDL_Delay(delay);
 		}
 		else if ( currentKeyStates[ SDL_SCANCODE_R ]) {
 			// Save appropriate ASCII code into memory 
-			*((BYTE*)memory + MEM_ASCII) = 0x52;
+			*((DWORD*)memory + MEM_ASCII) = 0x52;
 
 			// Set SFR to allow CPU to continue
-			*((BYTE*)memory + MEM_INT) = 0x00;
+			*((DWORD*)memory + MEM_INT) = 0x00;
+
+			SDL_Delay(delay);
 		}
 		else if ( currentKeyStates[ SDL_SCANCODE_S ]) {
 			// Save appropriate ASCII code into memory 
-			*((BYTE*)memory + MEM_ASCII) = 0x53;
+			*((DWORD*)memory + MEM_ASCII) = 0x53;
 
 			// Set SFR to allow CPU to continue
-			*((BYTE*)memory + MEM_INT) = 0x00;
+			*((DWORD*)memory + MEM_INT) = 0x00;
+
+			SDL_Delay(delay);
 		}
 		else if ( currentKeyStates[ SDL_SCANCODE_T ]) {
 			// Save appropriate ASCII code into memory 
-			*((BYTE*)memory + MEM_ASCII) = 0x54;
+			*((DWORD*)memory + MEM_ASCII) = 0x54;
 
 			// Set SFR to allow CPU to continue
-			*((BYTE*)memory + MEM_INT) = 0x00;
+			*((DWORD*)memory + MEM_INT) = 0x00;
+
+			SDL_Delay(delay);
 		}
 		else if ( currentKeyStates[ SDL_SCANCODE_U ]) {
 			// Save appropriate ASCII code into memory 
-			*((BYTE*)memory + MEM_ASCII) = 0x55;
+			*((DWORD*)memory + MEM_ASCII) = 0x55;
 
 			// Set SFR to allow CPU to continue
-			*((BYTE*)memory + MEM_INT) = 0x00;
+			*((DWORD*)memory + MEM_INT) = 0x00;
+
+			SDL_Delay(delay);
 		}
 		else if ( currentKeyStates[ SDL_SCANCODE_V ]) {
 			// Save appropriate ASCII code into memory 
-			*((BYTE*)memory + MEM_ASCII) = 0x56;
+			*((DWORD*)memory + MEM_ASCII) = 0x56;
 
 			// Set SFR to allow CPU to continue
-			*((BYTE*)memory + MEM_INT) = 0x00;
+			*((DWORD*)memory + MEM_INT) = 0x00;
+
+			SDL_Delay(delay);
 		}
 		else if ( currentKeyStates[ SDL_SCANCODE_W ]) {
 			// Save appropriate ASCII code into memory 
-			*((BYTE*)memory + MEM_ASCII) = 0x57;
+			*((DWORD*)memory + MEM_ASCII) = 0x57;
 
 			// Set SFR to allow CPU to continue
-			*((BYTE*)memory + MEM_INT) = 0x00;
+			*((DWORD*)memory + MEM_INT) = 0x00;
+
+			SDL_Delay(delay);
 		}
 		else if ( currentKeyStates[ SDL_SCANCODE_X ]) {
 			// Save appropriate ASCII code into memory 
-			*((BYTE*)memory + MEM_ASCII) = 0x58;
+			*((DWORD*)memory + MEM_ASCII) = 0x58;
 
 			// Set SFR to allow CPU to continue
-			*((BYTE*)memory + MEM_INT) = 0x00;
+			*((DWORD*)memory + MEM_INT) = 0x00;
+
+			SDL_Delay(delay);
 		}
 		else if ( currentKeyStates[ SDL_SCANCODE_Y ]) {
 			// Save appropriate ASCII code into memory 
-			*((BYTE*)memory + MEM_ASCII) = 0x59;
+			*((DWORD*)memory + MEM_ASCII) = 0x59;
 
 			// Set SFR to allow CPU to continue
-			*((BYTE*)memory + MEM_INT) = 0x00;
+			*((DWORD*)memory + MEM_INT) = 0x00;
+
+			SDL_Delay(delay);
 		}
 		else if ( currentKeyStates[ SDL_SCANCODE_Z ]) {
 			// Save appropriate ASCII code into memory 
-			*((BYTE*)memory + MEM_ASCII) = 0x5A;
+			*((DWORD*)memory + MEM_ASCII) = 0x5A;
 
 			// Set SFR to allow CPU to continue
-			*((BYTE*)memory + MEM_INT) = 0x00;
+			*((DWORD*)memory + MEM_INT) = 0x00;
+
+			SDL_Delay(delay);
 		}
-		
-		// Delay
-		SDL_Delay(210);
+		else if ( currentKeyStates[ SDL_SCANCODE_SPACE ]) {
+			// Save appropriate ASCII code into memory 
+			*((DWORD*)memory + MEM_ASCII) = 0x20;
+
+			// Set SFR to allow CPU to continue
+			*((DWORD*)memory + MEM_INT) = 0x00;
+
+			SDL_Delay(delay);
+		}
 	}
 	
 	// It stops here..
