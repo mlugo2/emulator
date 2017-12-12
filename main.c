@@ -38,7 +38,7 @@ int main(int argc, char const *argv[])
 /*04*/	0x10060008,		// addiu $6, $0, 0x09
 
 		/* Store max X pos in $3 */
-/*05*/	0x1003000F,		// addiu $3, $0, 0x0F
+/*05*/	0x10030028,		// addiu $3, $0, 0x0F
 
 		/* Store X pos in $4 */
 /*06*/	0x10040000,		// addiu $4, $0, 0x00

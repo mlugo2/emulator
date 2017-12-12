@@ -24,10 +24,6 @@ void risc_cpu(DWORD mem[], DWORD pc) {
 
 		// Stop the cpu while the interupt is handled
 		while (mem[MEM_INT] != 0x00) { if (quit) goto end; }
-		
-		printf("PC: %x\n", pc);
-		printf("reg[4]: %x\n", reg[4]);
-		printf("-----------\n\n");
 
 		// Fetch
 		instruction = mem[pc++];
