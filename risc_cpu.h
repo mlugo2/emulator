@@ -25,6 +25,10 @@ void risc_cpu(DWORD mem[], DWORD pc) {
 		// Stop the cpu while the interupt is handled
 		while (mem[MEM_INT] != 0x00) { if (quit) goto end; }
 		
+		printf("PC: %x\n", pc);
+		printf("reg[4]: %x\n", reg[4]);
+		printf("-----------\n\n");
+
 		// Fetch
 		instruction = mem[pc++];
 		opcode = get_opcode(instruction);
@@ -35,13 +39,6 @@ void risc_cpu(DWORD mem[], DWORD pc) {
 		funct  = get_funct(instruction);
 		imm16  = get_imm16(instruction);
 		target26 = get_target26(instruction);
-
-		// printf("opcode: %x\n", opcode);
-		// printf("rs: %x\n", 	   rsReg);
-		// printf("imm16: %x\n",  imm16);
-
-		// char c;
-		// scanf("%c", &c);
 
 		// Decode
 		switch(opcode) {
@@ -156,7 +153,7 @@ void risc_cpu(DWORD mem[], DWORD pc) {
 				break;
 			case 0x21:	// bne
 				if ( reg[rsReg] != reg[rtReg] )
-					pc += (imm16 << 2); 
+					pc += imm16; 
 				break;
 
 			/*****************************************

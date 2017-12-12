@@ -8,8 +8,6 @@
 /*
 	Author: Marco Lugo
 
-	Contributors: Kristina Garcia
-
 	Summary:
 	--------
 	
@@ -26,32 +24,58 @@
 
 int main(int argc, char const *argv[])
 {
-	// main memory 1MB
-	// DWORD *mem;
-	// mem = malloc(sizeof(DWORD)*0x3FFFFFFF);
-	// memset(mem, 0, sizeof(DWORD)*0x3FFFFFFF);
 
 	DWORD mem[0xFFFF] = {
 		/* Set font color */
-		0x10010008,		// addiu $1, 0x08
-		0xD4000000,		// trap4 color font
+/*00*/	0x10010008,		// addiu $1, $0, 0x08
+/*01*/	0xD4000000,		// trap4 color font
 
 		/* Set background color */
-		0x1001000F,		// addiu $1, 0x0F
-		0xD8000000,		// trap5 background color
+/*02*/	0x1001000F,		// addiu $1, $0, 0x0F
+/*03*/	0xD8000000,		// trap5 background color
 
-		/* Set cursor X and Y pos to 0 */
-		0x10010000,		// addiu $1, 0x00
-		0xCC000000,		// trap2 X pos
-		0xD0000000,		// trap3 Y pos
+		/* Store where to jump back to */
+/*04*/	0x10060008,		// addiu $6, $0, 0x09
+
+		/* Store max X pos in $3 */
+/*05*/	0x1003000F,		// addiu $3, $0, 0x0F
+
+		/* Store X pos in $4 */
+/*06*/	0x10040000,		// addiu $4, $0, 0x00
+
+		/* Store Y pos in $5 */
+/*07*/	0x10050000,		// addiu $5, $0, 0x00
+
+		/* Set cursor X pos */
+/*08*/	0x08040800,		// addu $1, $0, $4
+/*09*/	0xCC000000,		// trap2 X pos
+
+		/* Set cursor Y pos */
+/*0A*/	0x08050800,		// addu $1, $0, $5
+/*0B*/	0xD0000000,		// trap3 Y pos
 
 		/* Get char from user */
-		0x10010001,		// addiu $1, 0x01
-		0xC8000000,		// trap1 interrupt selection
+/*0C*/	0x10010001,		// addiu $1, $0, 0x01
+/*0D*/	0xC8000000,		// trap1 interrupt selection
 
 		/* Print char */
-		0x10010002,		// addiu $1, 0x02
-		0xC8000000,		// trap1 interrupt selection
+/*0E*/	0x10010002,		// addiu $1, $0, 0x02
+/*0F*/	0xC8000000,		// trap1 interrupt selection
+
+		/* Inc X pos */
+/*10*/	0x10840001,		// addiu $4, $4, 0x01
+
+		/* Check X pos */
+/*11*/	0x84640002,		// if $4 != $3 branch
+						
+/*12*/	0x10040000,		// X pos == max X pos
+						// set x Pos to 0
+
+		/* Inc Y pos */
+/*13*/	0x10A50001,		// addiu $5, $0, 0x01
+
+/*14*/	0x94C00000,		// branch here, jump to continue typing
+	
 	};
 
 	DWORD start = 0;
